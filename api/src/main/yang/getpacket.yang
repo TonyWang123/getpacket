@@ -1,0 +1,9 @@
+module getpacket {
+    yang-version 1;
+    namespace "urn:opendaylight:params:xml:ns:yang:getpacket";
+    prefix "getpacket";
+
+    revision "2015-01-05" {
+        description "Initial revision of getpacket model";
+    }
+}

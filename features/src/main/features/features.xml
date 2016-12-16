@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- vi: set et smarttab sw=4 tabstop=4: -->
+<!--
+Copyright © 2016 siwind, Inc. and others. All rights reserved.
+
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License v1.0 which accompanies this distribution,
+and is available at http://www.eclipse.org/legal/epl-v10.html
+-->
+<features name="odl-getpacket-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.2.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://karaf.apache.org/xmlns/features/v1.2.0 http://karaf.apache.org/xmlns/features/v1.2.0">
+  <repository>mvn:org.opendaylight.yangtools/features-yangtools/{{VERSION}}/xml/features</repository>
+  <repository>mvn:org.opendaylight.controller/features-mdsal/{{VERSION}}/xml/features</repository>
+  <repository>mvn:org.opendaylight.mdsal.model/features-mdsal-model/{{VERSION}}/xml/features</repository>
+  <repository>mvn:org.opendaylight.netconf/features-restconf/{{VERSION}}/xml/features</repository>
+  <repository>mvn:org.opendaylight.dlux/features-dlux/{{VERSION}}/xml/features</repository>
+
+  <repository>mvn:org.opendaylight.openflowplugin/features-openflowplugin/${openflowplugin.version}/xml/features</repository>
+
+  <feature name='odl-getpacket-api' version='${project.version}' description='OpenDaylight :: getpacket :: api'>
+    <feature version='${mdsal.model.version}'>odl-mdsal-models</feature>
+    <bundle>mvn:com.siwind.bupt/getpacket-api/{{VERSION}}</bundle>
+  </feature>
+  <feature name='odl-getpacket' version='${project.version}' description='OpenDaylight :: getpacket'>
+    <feature version='${openflowplugin.version}'>odl-openflowplugin-southbound</feature>
+    <feature version='${mdsal.version}'>odl-mdsal-broker</feature>
+    <feature version='${project.version}'>odl-getpacket-api</feature>
+    <bundle>mvn:com.siwind.bupt/getpacket-impl/{{VERSION}}</bundle>
+  </feature>
+  <feature name='odl-getpacket-rest' version='${project.version}' description='OpenDaylight :: getpacket :: REST'>
+    <feature version="${project.version}">odl-getpacket</feature>
+    <feature version="${restconf.version}">odl-restconf</feature>
+  </feature>
+  <feature name='odl-getpacket-ui' version='${project.version}' description='OpenDaylight :: getpacket :: UI'>
+    <feature version="${project.version}">odl-getpacket-rest</feature>
+    <feature version="${restconf.version}">odl-mdsal-apidocs</feature>
+    <feature version="${mdsal.version}">odl-mdsal-xsql</feature>
+    <feature version="${dlux.version}">odl-dlux-yangui</feature>
+  </feature>
+  <feature name='odl-getpacket-cli' version='${project.version}' description='OpenDaylight :: getpacket :: CLI'>
+    <feature version="${project.version}">odl-getpacket</feature>
+    <bundle>mvn:com.siwind.bupt/getpacket-cli/{{VERSION}}</bundle>
+  </feature>
+
+</features>
