@@ -9,7 +9,7 @@ It works on :
 In Opendaylight, "packet-received" notification from module(packet-processing 2013-07-09) 
 provides the ability to obtain any raw packet-data from network to controller.
 
-# For Opendaylight version of Beryllium
+# For Opendaylight's Beryllium+ version
 The content of "xxxProvider.java " would look like this:
 ```
 import org.opendaylight.controller.sal.binding.api.NotificationService;
