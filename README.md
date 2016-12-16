@@ -2,7 +2,7 @@ getpacket project
 =================
 This is the Opendaylight demo project for receiving any raw packet-data from network.
 It works on :
-* Opendaylight version: Boron-SR1, Beryllium-SR+, and previous version
+* Opendaylight version: Boron-SR+, Beryllium-SR+, and previous version
 
 
 # Introduction
