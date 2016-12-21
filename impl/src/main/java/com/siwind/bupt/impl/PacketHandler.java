@@ -111,12 +111,13 @@ public class PacketHandler implements PacketProcessingListener {
             if( str.length()<=1 ){
                 macStr.append("0");
             }
-            macStr.append(str + delimit);
-        }
-        
-        if( delimit.length()>=1 ){
-            macStr.setCharAt(macStr.length() - 1, ' ');
-        }
+            macStr.append(str);
+
+            if( i < bts.length - 1 ) { //not last delimit string
+                macStr.append(delimit);
+            }
+        } // end of for !!
+
         return macStr.toString();
     }
 
