@@ -59,6 +59,7 @@ $ git clone https://github.com/siwind/getpacket
 $ mvn clean install
 $ ./karaf/target/assembly/bin/karaf 
 
+karaf>feature:install odl-getpacket-ui
 karaf>feature:list -i | grep getpacket
 karaf>log:tail
 
