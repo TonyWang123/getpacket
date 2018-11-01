@@ -33,7 +33,7 @@ public class GetpacketIT extends AbstractMdsalTestBase {
     public MavenUrlReference getFeatureRepo() {
         return maven()
                 .groupId("com.siwind.bupt")
-                .artifactId("getpacket-features")
+                .artifactId("features-getpacket")
                 .classifier("features")
                 .type("xml")
                 .versionAsInProject();
@@ -41,7 +41,7 @@ public class GetpacketIT extends AbstractMdsalTestBase {
 
     @Override
     public String getFeatureName() {
-        return "odl-getpacket-ui";
+        return "odl-getpacket";
     }
 
     @Override
