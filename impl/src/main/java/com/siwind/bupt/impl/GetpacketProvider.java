@@ -12,8 +12,9 @@ import org.opendaylight.controller.md.sal.binding.api.NotificationService;
 
 import org.opendaylight.yangtools.concepts.ListenerRegistration;
 import org.opendaylight.yangtools.yang.binding.NotificationListener;
-
-
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,12 @@ public class GetpacketProvider {
         
         if (notificationService != null) {
             LOG.info("NotificationService is: " + notificationService.toString());
-            PacketHandler packetHandler = new PacketHandler();
+            
+            CloseableHttpClient client = HttpClients.createDefault();
+            
+            LOG.info("Created httpclient");
+            
+            PacketHandler packetHandler = new PacketHandler(client);
             registration = notificationService.registerNotificationListener(packetHandler);
 
 

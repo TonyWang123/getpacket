@@ -55,6 +55,13 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
       <artifactId>model-flow-service</artifactId>
       <version>${openflowplugin.version}</version>
     </dependency>
+    
+    
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.6</version>
+    </dependency>
 
     <!-- Testing Dependencies -->
     <dependency>

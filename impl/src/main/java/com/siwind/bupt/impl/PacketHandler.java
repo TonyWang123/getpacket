@@ -7,13 +7,23 @@
  */
 package com.siwind.bupt.impl;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.packet.service.rev130709.PacketProcessingListener;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.packet.service.rev130709.PacketReceived;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.siwind.bupt.impl.util.BitBufferHelper;
+import com.sun.javafx.image.impl.ByteBgraPre;
 
 public class PacketHandler implements PacketProcessingListener {
 
@@ -52,27 +62,117 @@ public class PacketHandler implements PacketProcessingListener {
      * end position of ethernet type in array
      */
     private static final int ETHER_TYPE_END_POSITION = 14;
+    
+    
+    private static final int IPV4_PROTOCOL_START_POSITION = ETHER_TYPE_END_POSITION + 9;
+    
+    private static final int IPV4_PROTOCOL_END_POSITION = IPV4_PROTOCOL_START_POSITION + 1;
+    
+    private static final int IPV4_SRCIP_START_POSITION = ETHER_TYPE_END_POSITION + 12;
+    
+    private static final int IPV4_SRCIP_END_POSITION = IPV4_SRCIP_START_POSITION + 4;
+    
+    private static final int IPV4_DSTIP_START_POSITION = ETHER_TYPE_END_POSITION + 16;
+    
+    private static final int IPV4_DSTIP_END_POSITION = IPV4_DSTIP_START_POSITION + 4;
+    
+    private static final int TCP_SRCPORT_START_POSITION = IPV4_DSTIP_END_POSITION;
+    
+    private static final int TCP_SRCPORT_END_POSITION = TCP_SRCPORT_START_POSITION + 2;
+    
+    private static final int TCP_DSTPORT_START_POSITION = TCP_SRCPORT_END_POSITION;
+    
+    private static final int TCP_DSTPORT_END_POSITION = TCP_DSTPORT_START_POSITION + 2;
+    
+    
+    private static final String TRIDENT_URL = "http://192.168.1.105/";
+
 
     private static final Logger LOG = LoggerFactory.getLogger(PacketHandler.class);
+    
+    private CloseableHttpClient httpClient = null;
 
-    public PacketHandler() {
+    public PacketHandler(CloseableHttpClient httpClient) {
         LOG.info("[Siwind] PacketHandler Initiated. ");
+        this.httpClient = httpClient;
     }
 
     @Override
     public void onPacketReceived(PacketReceived notification) {
-        // TODO Auto-generated method stub
-
+    	LOG.info("[Siwind] Packet received. ");
+    	String srcIP = null, dstIP = null, srcPort = null, dstPort = null, protocol = null;
+    	
         // read src MAC and dst MAC
         byte[] dstMacRaw = extractDstMac(notification.getPayload());
         byte[] srcMacRaw = extractSrcMac(notification.getPayload());
         byte[] ethType   = extractEtherType(notification.getPayload());
+        
+        if (BitBufferHelper.getShort(ethType) == 0x0800) {
+        	LOG.info("[Siwind] IP Packet received. ");
+        	// IPv4
+        	byte[] srcIPBytes = Arrays.copyOfRange(notification.getPayload(), IPV4_SRCIP_START_POSITION, IPV4_SRCIP_END_POSITION);
+        	int srcIPInt = BitBufferHelper.getInt(srcIPBytes);
+        	InetAddress srcIPAddress;
+			try {
+				srcIPAddress = InetAddress.getByAddress(BigInteger.valueOf(srcIPInt).toByteArray());
+				srcIP = srcIPAddress.getHostAddress();
+			} catch (UnknownHostException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        	
+        	
+        	byte[] dstIPBytes = Arrays.copyOfRange(notification.getPayload(), IPV4_DSTIP_START_POSITION, IPV4_DSTIP_END_POSITION);
+        	int dstIPInt = BitBufferHelper.getInt(dstIPBytes);
+        	InetAddress dstIPAddress;
+			try {
+				dstIPAddress = InetAddress.getByAddress(BigInteger.valueOf(dstIPInt).toByteArray());
+				dstIP = dstIPAddress.getHostAddress();
+			} catch (UnknownHostException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        	
+        	
+        	
+        	byte[] protocolBytes = Arrays.copyOfRange(notification.getPayload(), IPV4_PROTOCOL_START_POSITION, IPV4_PROTOCOL_END_POSITION);
+        	short protocolS = BitBufferHelper.getShort(protocolBytes);
+        	protocol = String.valueOf(protocolS);
+        	if (protocolS == 6) {
+        		LOG.info("[Siwind] TCP Packet received. ");
+        		// tcp
+        		byte[] srcPortBytes = Arrays.copyOfRange(notification.getPayload(), TCP_SRCPORT_START_POSITION, TCP_SRCPORT_END_POSITION);
+        		short srcPortS = BitBufferHelper.getShort(srcPortBytes);
+        		srcPort = String.valueOf(srcPortS);
+        		
+        		byte[] dstPortBytes = Arrays.copyOfRange(notification.getPayload(), TCP_DSTPORT_START_POSITION, TCP_DSTPORT_END_POSITION);
+        		short dstPortS = BitBufferHelper.getShort(dstPortBytes);
+        		dstPort = String.valueOf(dstPortS);
+        	}
+        }
 
-        String dstMac = byteToHexStr(dstMacRaw, ":");
-        String srcMac = byteToHexStr(srcMacRaw, ":");
-        String ethStr = byteToHexStr(ethType, "");
+        //String dstMac = byteToHexStr(dstMacRaw, ":");
+        //String srcMac = byteToHexStr(srcMacRaw, ":");
+        //String ethStr = byteToHexStr(ethType, "");
+        if (protocol != null) {
+        	String packet = srcIP + "and" + dstIP + "and" + protocol + "and" + srcPort + "and" + dstPort;
+            
+            HttpGet httpGet = new HttpGet(TRIDENT_URL + "?packet=" + packet);
 
-        LOG.info("[Siwind] Received packet from MAC {} to MAC {}, EtherType=0x{} ", srcMac, dstMac, ethStr);
+            LOG.info("[Siwind] Received packet:" + packet);
+            
+            try {
+    			httpClient.execute(httpGet);
+    			LOG.info("[Siwind] Send packet to trident");
+    		} catch (ClientProtocolException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		} catch (IOException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+        }
+
     }
 
     /**
