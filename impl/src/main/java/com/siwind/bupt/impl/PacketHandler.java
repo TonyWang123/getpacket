@@ -12,13 +12,20 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.opendaylight.controller.md.sal.binding.api.DataBroker;
+import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnector;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnectorId;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnectorRef;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.node.NodeConnectorKey;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.packet.service.rev130709.PacketProcessingListener;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.packet.service.rev130709.PacketReceived;
-
+import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,20 +92,42 @@ public class PacketHandler implements PacketProcessingListener {
     private static final int TCP_DSTPORT_END_POSITION = TCP_DSTPORT_START_POSITION + 2;
     
     
-    private static final String TRIDENT_URL = "http://192.168.1.105/";
+    private static final String TRIDENT_URL = "http://127.0.0.1/";
 
 
     private static final Logger LOG = LoggerFactory.getLogger(PacketHandler.class);
     
     private CloseableHttpClient httpClient = null;
+    
+    private DataBroker dataBroker;
 
-    public PacketHandler(CloseableHttpClient httpClient) {
+    public PacketHandler(CloseableHttpClient httpClient, DataBroker dataBroker) {
         LOG.info("[Siwind] PacketHandler Initiated. ");
         this.httpClient = httpClient;
+        this.dataBroker = dataBroker;
     }
 
     @Override
     public void onPacketReceived(PacketReceived notification) {
+    	
+    	String ingressString = null;
+    	
+    	NodeConnectorRef ref = notification.getIngress();
+        
+    	NodeConnector nodeConnector;
+		try {
+			nodeConnector = (NodeConnector) dataBroker.newReadOnlyTransaction()
+			        .read(LogicalDatastoreType.OPERATIONAL, ref.getValue()).get();
+			NodeConnectorId nodeConnectorId = nodeConnector.getId();
+	        ingressString = nodeConnectorId.getValue();
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (ExecutionException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+    	
     	LOG.info("[Siwind] Packet received. ");
     	String srcIP = null, dstIP = null, srcPort = null, dstPort = null, protocol = null;
     	
@@ -155,7 +184,8 @@ public class PacketHandler implements PacketProcessingListener {
         //String srcMac = byteToHexStr(srcMacRaw, ":");
         //String ethStr = byteToHexStr(ethType, "");
         if (protocol != null) {
-        	String packet = srcIP + "and" + dstIP + "and" + protocol + "and" + srcPort + "and" + dstPort;
+        	String packet = "ingress=" + ingressString + "&sip=" + srcIP + "/32&dip=" + dstIP + "/32&sport=" + srcPort + "&dport=" + dstPort + "&proto=" + protocol;
+        	//String packet = srcIP + "and" + dstIP + "and" + protocol + "and" + srcPort + "and" + dstPort;
             
             HttpGet httpGet = new HttpGet(TRIDENT_URL + "?packet=" + packet);
 

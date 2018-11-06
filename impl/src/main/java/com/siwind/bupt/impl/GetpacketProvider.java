@@ -53,7 +53,7 @@ public class GetpacketProvider {
             
             LOG.info("Created httpclient");
             
-            PacketHandler packetHandler = new PacketHandler(client);
+            PacketHandler packetHandler = new PacketHandler(client, this.dataBroker);
             registration = notificationService.registerNotificationListener(packetHandler);
 
 
