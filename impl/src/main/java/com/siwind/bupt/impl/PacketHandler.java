@@ -127,7 +127,7 @@ public class PacketHandler implements PacketProcessingListener {
 			e1.printStackTrace();
 		}
     	
-    	LOG.info("[Siwind] Packet received. ");
+    	LOG.info("[Siwind] Packet received from ingress: " + ingressString);
     	String srcIP = null, dstIP = null, srcPort = null, dstPort = null, protocol = null;
     	
         // read src MAC and dst MAC
