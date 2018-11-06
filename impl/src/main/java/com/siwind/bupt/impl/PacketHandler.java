@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.siwind.bupt.impl.util.BitBufferHelper;
-import com.sun.javafx.image.impl.ByteBgraPre;
 
 public class PacketHandler implements PacketProcessingListener {
 
