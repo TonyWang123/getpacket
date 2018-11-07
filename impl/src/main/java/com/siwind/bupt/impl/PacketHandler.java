@@ -13,12 +13,15 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
+import org.opendaylight.openflowjava.protocol.api.connection.StatisticsConfiguration;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnector;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnectorId;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnectorRef;
@@ -105,6 +108,13 @@ public class PacketHandler implements PacketProcessingListener {
         this.httpClient = httpClient;
         this.dataBroker = dataBroker;
     }
+    
+    private static Pattern ingressP = Pattern.compile("openflow:[0-9]+:[0-9]+");
+    
+    public static String getIngressStr(String nodeConnectorRefStr) {
+    	Matcher m = ingressP.matcher(nodeConnectorRefStr);
+    	return m.group();
+    }
 
     @Override
     public void onPacketReceived(PacketReceived notification) {
@@ -115,8 +125,9 @@ public class PacketHandler implements PacketProcessingListener {
     	
     	LOG.info("[Siwind] NodeConnectorRef: " + ref.toString());
     	LOG.info("[Siwind] NodeConnectorRef value: " + ref.getValue().toString());
+    	//KeyedInstanceIdentifier{targetType=interface org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.node.NodeConnector, path=[org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.Nodes, org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.Node[key=NodeKey [_id=Uri [_value=openflow:1]]], org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.node.NodeConnector[key=NodeConnectorKey [_id=Uri [_value=openflow:1:1]]]]}
         
-    	NodeConnector nodeConnector;
+    	/*NodeConnector nodeConnector;
 		try {
 			nodeConnector = (NodeConnector) dataBroker.newReadOnlyTransaction()
 			        .read(LogicalDatastoreType.OPERATIONAL, ref.getValue()).get();
@@ -128,7 +139,9 @@ public class PacketHandler implements PacketProcessingListener {
 		} catch (ExecutionException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		}
+		}*/
+    	
+    	ingressString = getIngressStr(ref.getValue().toString());
     	
     	LOG.info("[Siwind] Packet received from ingress: " + ingressString);
     	String srcIP = null, dstIP = null, srcPort = null, dstPort = null, protocol = null;
