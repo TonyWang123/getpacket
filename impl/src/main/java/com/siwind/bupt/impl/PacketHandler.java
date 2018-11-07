@@ -112,6 +112,9 @@ public class PacketHandler implements PacketProcessingListener {
     	String ingressString = null;
     	
     	NodeConnectorRef ref = notification.getIngress();
+    	
+    	LOG.info("[Siwind] NodeConnectorRef: " + ref.toString());
+    	LOG.info("[Siwind] NodeConnectorRef value: " + ref.getValue().toString());
         
     	NodeConnector nodeConnector;
 		try {
