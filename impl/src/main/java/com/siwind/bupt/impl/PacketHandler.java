@@ -113,7 +113,10 @@ public class PacketHandler implements PacketProcessingListener {
     
     public static String getIngressStr(String nodeConnectorRefStr) {
     	Matcher m = ingressP.matcher(nodeConnectorRefStr);
-    	return m.group();
+    	if (m.find()) {
+    		return m.group();
+    	}
+    	return null;
     }
 
     @Override
