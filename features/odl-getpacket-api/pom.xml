@@ -14,7 +14,7 @@
     <groupId>com.siwind.bupt</groupId>
     <artifactId>odl-getpacket-api</artifactId>
     <version>0.1.0</version>
-    <packaging>feature</packaging>
+    <packaging>kar</packaging>
 
     <name>OpenDaylight :: getpacket :: API [Karaf Feature]</name>
 

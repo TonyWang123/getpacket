@@ -14,7 +14,7 @@
     <groupId>com.siwind.bupt</groupId>
     <artifactId>odl-getpacket-rest</artifactId>
     <version>0.1.0</version>
-    <packaging>feature</packaging>
+    <packaging>kar</packaging>
 
     <name>OpenDaylight :: getpacket :: REST [Karaf Feature]</name>
 
