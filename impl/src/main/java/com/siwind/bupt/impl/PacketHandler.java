@@ -130,6 +130,10 @@ public class PacketHandler implements PacketProcessingListener, DataTreeChangeLi
     	}
     	return null;
     }
+    
+    public static int toUnsigned(short s) {
+    	return s & 0x0FFFF;
+    }
 
     @Override
     public void onPacketReceived(PacketReceived notification) {
@@ -163,7 +167,9 @@ public class PacketHandler implements PacketProcessingListener, DataTreeChangeLi
     	
     	LOG.info("[Siwind] Received packet length: " + notification.getPayload().length);
     	
-    	LOG.info("[Siwind] Received packet byte: " + notification.getPayload());
+    	LOG.info("[Siwind] Received packet byte: " + byteToHexStr(notification.getPayload(), " "));
+    	
+    	if (notification.getPayload().length == 0) return;
     	
         // read src MAC and dst MAC
         byte[] dstMacRaw = extractDstMac(notification.getPayload());
@@ -206,11 +212,11 @@ public class PacketHandler implements PacketProcessingListener, DataTreeChangeLi
         		// tcp
         		byte[] srcPortBytes = Arrays.copyOfRange(notification.getPayload(), TCP_SRCPORT_START_POSITION, TCP_SRCPORT_END_POSITION);
         		short srcPortS = BitBufferHelper.getShort(srcPortBytes);
-        		srcPort = String.valueOf(srcPortS);
+        		srcPort = String.valueOf(toUnsigned(srcPortS));
         		
         		byte[] dstPortBytes = Arrays.copyOfRange(notification.getPayload(), TCP_DSTPORT_START_POSITION, TCP_DSTPORT_END_POSITION);
         		short dstPortS = BitBufferHelper.getShort(dstPortBytes);
-        		dstPort = String.valueOf(dstPortS);
+        		dstPort = String.valueOf(toUnsigned(dstPortS));
         	}
         }
 
