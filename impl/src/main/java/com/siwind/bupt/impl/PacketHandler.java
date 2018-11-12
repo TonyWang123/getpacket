@@ -106,7 +106,7 @@ public class PacketHandler implements PacketProcessingListener, DataTreeChangeLi
     private static final int TCP_DSTPORT_END_POSITION = TCP_DSTPORT_START_POSITION + 2;
     
     
-    private static final String TRIDENT_URL = "http://127.0.0.1/";
+    private static final String TRIDENT_URL = "http://127.0.0.1:12321/";
 
 
     private static final Logger LOG = LoggerFactory.getLogger(PacketHandler.class);
@@ -208,6 +208,7 @@ public class PacketHandler implements PacketProcessingListener, DataTreeChangeLi
         	short protocolS = BitBufferHelper.getShort(protocolBytes);
         	protocol = String.valueOf(protocolS);
         	if (protocolS == 6) {
+        		protocol = "tcp";
         		LOG.info("[Siwind] TCP Packet received. ");
         		// tcp
         		byte[] srcPortBytes = Arrays.copyOfRange(notification.getPayload(), TCP_SRCPORT_START_POSITION, TCP_SRCPORT_END_POSITION);
@@ -223,11 +224,11 @@ public class PacketHandler implements PacketProcessingListener, DataTreeChangeLi
         //String dstMac = byteToHexStr(dstMacRaw, ":");
         //String srcMac = byteToHexStr(srcMacRaw, ":");
         //String ethStr = byteToHexStr(ethType, "");
-        if (protocol != null) {
-        	String packet = "ingress=" + ingressString + "&sip=" + srcIP + "/32&dip=" + dstIP + "/32&sport=" + srcPort + "&dport=" + dstPort + "&proto=" + protocol;
+        if (protocol == "tcp") {
+        	String packet = "sip=" + srcIP + "/32&dip=" + dstIP + "/32&sport=" + srcPort + "&dport=" + dstPort + "&proto=tcp&inport=" + ingressString;
         	//String packet = srcIP + "and" + dstIP + "and" + protocol + "and" + srcPort + "and" + dstPort;
             
-            HttpGet httpGet = new HttpGet(TRIDENT_URL + "?packet=" + packet);
+            HttpGet httpGet = new HttpGet(TRIDENT_URL + "packet?" + packet);
 
             LOG.info("[Siwind] Received packet:" + packet);
             
