@@ -163,6 +163,8 @@ public class PacketHandler implements PacketProcessingListener, DataTreeChangeLi
     	
     	LOG.info("[Siwind] Received packet length: " + notification.getPayload().length);
     	
+    	LOG.info("[Siwind] Received packet byte: " + notification.getPayload());
+    	
         // read src MAC and dst MAC
         byte[] dstMacRaw = extractDstMac(notification.getPayload());
         byte[] srcMacRaw = extractSrcMac(notification.getPayload());
