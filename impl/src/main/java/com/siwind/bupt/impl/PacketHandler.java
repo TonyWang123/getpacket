@@ -161,6 +161,8 @@ public class PacketHandler implements PacketProcessingListener, DataTreeChangeLi
     	LOG.info("[Siwind] Packet received from ingress: " + ingressString);
     	String srcIP = null, dstIP = null, srcPort = null, dstPort = null, protocol = null;
     	
+    	LOG.info("[Siwind] Received packet length: " + notification.getPayload().length);
+    	
         // read src MAC and dst MAC
         byte[] dstMacRaw = extractDstMac(notification.getPayload());
         byte[] srcMacRaw = extractSrcMac(notification.getPayload());
