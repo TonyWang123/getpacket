@@ -11,6 +11,7 @@ import org.opendaylight.controller.md.sal.binding.api.NotificationPublishService
 import org.opendaylight.controller.md.sal.binding.api.NotificationService;
 
 import org.opendaylight.yangtools.concepts.ListenerRegistration;
+import org.opendaylight.yangtools.concepts.Registration;
 import org.opendaylight.yangtools.yang.binding.NotificationListener;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -27,6 +28,8 @@ public class GetpacketProvider {
 
     private final NotificationPublishService notificationPublishService;
     private final NotificationService notificationService;
+    
+    private Registration listenerRegistration;
 
     // registration for PacketProcessingListener
     private ListenerRegistration<NotificationListener> registration = null;
@@ -56,6 +59,9 @@ public class GetpacketProvider {
             PacketHandler packetHandler = new PacketHandler(client, this.dataBroker);
             registration = notificationService.registerNotificationListener(packetHandler);
 
+            listenerRegistration = packetHandler.registerAsDataChangeListener();
+            
+            LOG.info("Created DataChangeListener");
 
         }
 
@@ -69,6 +75,10 @@ public class GetpacketProvider {
 
         if( registration != null){
             registration.close();           
+        }
+        
+        if( listenerRegistration != null){
+        	listenerRegistration.close();           
         }
     }
 }
