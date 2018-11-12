@@ -12,16 +12,22 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
+import org.opendaylight.controller.md.sal.binding.api.DataObjectModification;
+import org.opendaylight.controller.md.sal.binding.api.DataTreeChangeListener;
+import org.opendaylight.controller.md.sal.binding.api.DataTreeModification;
 import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
 import org.opendaylight.openflowjava.protocol.api.connection.StatisticsConfiguration;
+import org.opendaylight.yang.gen.v1.urn.tbd.params.xml.ns.yang.network.topology.rev131021.network.topology.topology.Link;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnector;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnectorId;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeConnectorRef;
@@ -34,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import com.siwind.bupt.impl.util.BitBufferHelper;
 
-public class PacketHandler implements PacketProcessingListener {
+public class PacketHandler implements PacketProcessingListener, DataTreeChangeListener<Link> {
 
     /**
      * size of MAC address in octets (6*8 = 48 bits)
@@ -268,6 +274,37 @@ public class PacketHandler implements PacketProcessingListener {
 
         return macStr.toString();
     }
+
+	@Override
+	public void onDataTreeChanged(Collection<DataTreeModification<Link>> changes) {
+		boolean isGraphUpdated = false;
+		
+		LOG.info("[Siwind] Link changes");
+
+        for (DataTreeModification<Link> change: changes) {
+            DataObjectModification<Link> rootNode = change.getRootNode();
+            switch (rootNode.getModificationType()) {
+                case WRITE:
+                    Link createdLink = rootNode.getDataAfter();
+                    if (rootNode.getDataBefore() == null && !createdLink.getLinkId().getValue().contains("host")) {
+                        isGraphUpdated = true;
+                        LOG.info("[Siwind] Graph is updated! Added Link {}", createdLink.getLinkId().getValue());
+                    }
+                    break;
+                case DELETE:
+                    Link deletedLink = rootNode.getDataBefore();
+                    if (!deletedLink.getLinkId().getValue().contains("host")) {
+                        isGraphUpdated = true;
+                        LOG.info("[Siwind] Graph is updated! Removed Link {}", deletedLink.getLinkId().getValue());
+                        break;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+	}
 
 }
 
